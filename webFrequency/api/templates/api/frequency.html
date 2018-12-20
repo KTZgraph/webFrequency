@@ -1,0 +1,82 @@
+{% load static %}
+{% block content %}
+
+<!DOCTYPE <!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Częstotliwość</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script> developer version vueJs  -->
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script>  <!-- production vueJs link  -->
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+</head>
+
+
+<body>
+    <div id="frequencyVue">
+        <h1>Częstotliwość słów kluczowych na stronie</h1>
+        <p>{{info}}</p>
+
+        <input id="userUrl" v-on:keyup.enter="getFrequency" ref="inputUserUrl" type="text" required>
+        <button  v-on:click="getFrequency"> Wyślij </button>
+        <ul>
+            <li>Podany adres url: [[userUrl]]</li>
+            <li> Keywords z tagu meta keywords: [[keywords]]</li>
+            <li>Kod odpowiedzi http: [[statusCode]]</li>
+            <li>Częstotliwość słów: [[frequency]]</li>
+            <li>
+                [[ errorMessage ]]
+            </li>
+        </ul>
+      </div>
+</body>
+</html>
+
+<script>
+var frequencyVue = new Vue({
+  el: '#frequencyVue',
+  delimiters: ['[[', ']]'],
+
+  data: {
+    userUrl: '',
+    frequency: null,
+    keywords: null,
+    errorMessage: null,
+    statusCode: null,
+    backendUrl: window.location.href
+  },
+  methods:{
+      getFrequency: function(){
+          var frequencyVue = this;
+
+          frequencyVue.userUrl = this.$refs.inputUserUrl.value
+          if (this.userUrl != ''){
+            output = {}
+            output.userUrl = this.userUrl;
+
+            axios.post(this.backendUrl, output, {
+                        headers: {
+                            'Content-Type': 'application/json',
+                        }
+            }).then(function(response){
+
+                frequencyVue.statusCode = response.data.statusCode;
+                frequencyVue.frequency = response.data.frequency;
+                frequencyVue.keywords = response.data.keywords;
+                frequencyVue.errorMessage = response.data.errorMessage //response.data.errorMessage;
+            })
+            .catch(function(error){
+                frequencyVue.errorMessage = "Javascript error: " + error;
+            });
+      }
+      else{
+        frequencyVue.errorMessage = "[Błąd] Pusty adres url - proszę podać adres strony";
+      }
+    }
+  }
+})
+</script>
+
+{% endblock %}
